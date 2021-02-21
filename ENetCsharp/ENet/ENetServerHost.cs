@@ -146,7 +146,6 @@ namespace ENetCsharp
 
         private void OnHandlePacket(ref Event netEvent)
         {
-            Console.WriteLine("Packet received");
             if (!_clientsById.ContainsKey(netEvent.Peer.ID))
             {
                 Console.WriteLine("Packet received but server does not have the client");
