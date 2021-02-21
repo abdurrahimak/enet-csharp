@@ -96,6 +96,7 @@ namespace ServerTest
         {
             Console.WriteLine($"Connected {client.NetworkId}");
             _clients.Add(client);
+            HandleProtocol.SendTest(_server, _clients, new string[] { "send", "test" });
         }
     }
 
@@ -118,7 +119,33 @@ namespace ServerTest
                     testProtocol.Text = "Server Test";
                     testProtocol.Number = i;
                     testProtocol.FloatNumber = 15.20f;
+                    testProtocol.PlayerID = 313131;
                     server.SendProtocolToAll(testProtocol);
+                }
+            }
+        }
+        internal static void SendTest(IHostServer server, List<AbstractClient> clients, string[] commands)
+        {
+            if (commands.Length < 2)
+            {
+                Console.WriteLine("Wrong..");
+                return;
+            }
+            Console.WriteLine("Protocol send request: " + commands[1]);
+
+            if (commands[1] == "test")
+            {
+                foreach (var item in clients)
+                {
+                    for (int i = 0; i < 150; i++)
+                    {
+                        TestProtocol testProtocol = new TestProtocol();
+                        testProtocol.Text = "Server Test";
+                        testProtocol.Number = i;
+                        testProtocol.FloatNumber = 15.20f;
+                        testProtocol.PlayerID = item.NetworkId;
+                        server.SendProtocolToPeer(item, testProtocol);
+                    }
                 }
             }
         }

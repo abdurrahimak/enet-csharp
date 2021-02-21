@@ -8,6 +8,7 @@ namespace ENetCsharp
         event Action Disconnected;
         event Action<IProtocol> ProtocolReceived;
 
+        AbstractClient GetClient();
         void StartClient();
         void Destroy();
         void SendProtocol(IProtocol protocol, ENetCsharp.PacketFlags packetFlags = ENetCsharp.PacketFlags.None);

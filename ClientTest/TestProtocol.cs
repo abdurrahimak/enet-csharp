@@ -8,12 +8,14 @@ namespace ClientTest
         public int Number;
         public string Text;
         public float FloatNumber;
+        public uint PlayerID;
 
         public void Read(PacketOrganizer packet)
         {
             Number = packet.ReadInt();
             Text = packet.ReadString();
             FloatNumber = packet.ReadFloat();
+            PlayerID = (uint)packet.ReadLong();
         }
 
         public void Write(PacketOrganizer packet)
@@ -21,11 +23,12 @@ namespace ClientTest
             packet.Write(Number);
             packet.Write(Text);
             packet.Write(FloatNumber);
+            packet.Write((long)PlayerID);
         }
 
         public override string ToString()
         {
-            return $"{Number}, {Text}, {FloatNumber}";
+            return $"{Number}, {Text}, {FloatNumber}, {PlayerID}";
         }
     }
 }

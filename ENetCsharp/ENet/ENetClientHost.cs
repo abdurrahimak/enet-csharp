@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 namespace ENetCsharp
 {
+
     internal class ENetClientHost : IHostClient
     {
         private IProtocolManager _protocolManager;
@@ -14,6 +15,8 @@ namespace ENetCsharp
         private PeerState _peerState;
         private CancellationTokenSource _cancellationTokenSource;
         private Event netEvent;
+        private AbstractClient _peerClient;
+        private Guid _guid;
 
         private const int _channelID = 0;
 
@@ -26,6 +29,7 @@ namespace ENetCsharp
             _clientOptions = clientOptions;
             _protocolManager = new ProtocolManager();
             _peerState = PeerState.Uninitialized;
+            _guid = Guid.NewGuid();
         }
 
         public void StartClient()
@@ -46,6 +50,7 @@ namespace ENetCsharp
                 _client.Create();
                 Console.WriteLine($"Connecting to {_clientOptions.IP}:{_clientOptions.Port}");
                 _peer = _client.Connect(address);
+                _peerClient = new ENetClient(_peer);
             }
             catch (Exception ex)
             {
@@ -63,7 +68,7 @@ namespace ENetCsharp
         public void Disconnect(uint disconnectType = 0)
         {
             if (_connected)
-                _peer.Disconnect(disconnectType);
+                _peerClient.Disconnect(disconnectType);
         }
 
         public void RegisterProtocolType(Type protocolType)
@@ -79,9 +84,7 @@ namespace ENetCsharp
                 {
                     protocol.Write(pW);
                     byte[] data = pW.ToArray();
-                    var p = default(Packet);
-                    p.Create(data);
-                    _peer.Send(_channelID, ref p);
+                    _peerClient.SendData(data);
                 }
             }
         }
@@ -143,31 +146,11 @@ namespace ENetCsharp
                 {
                     if (result.Result == PeerState.Connected)
                     {
-                        OnClientConnected();
+                        MainThreadDispatcher.EnqueueAction(_guid, OnClientConnected);
                     }
                     else
                     {
-                        OnClientDisconnected();
-                    }
-                });
-            }
-            else if (peerState == PeerState.Disconnecting)
-            {
-                if (_cancellationTokenSource != null)
-                {
-                    _cancellationTokenSource.Cancel();
-                }
-                _cancellationTokenSource = new CancellationTokenSource();
-                var task = Task.Factory.StartNew(() => { return CheckConnected(3000); }, _cancellationTokenSource.Token);
-                task.ContinueWith((result) =>
-                {
-                    if (result.Result == PeerState.Connected)
-                    {
-                        OnClientConnected();
-                    }
-                    else
-                    {
-                        OnClientDisconnected();
+                        MainThreadDispatcher.EnqueueAction(_guid, OnClientDisconnected);
                     }
                 });
             }
@@ -202,6 +185,9 @@ namespace ENetCsharp
 
         public void Update()
         {
+            Action action = MainThreadDispatcher.DequeueAction(_guid);
+            action?.Invoke();
+
             if (_client == null)
                 return;
             if (_peerState != _peer.State)
@@ -229,6 +215,11 @@ namespace ENetCsharp
             }
 
             _client.Flush();
+        }
+
+        public AbstractClient GetClient()
+        {
+            return _peerClient;
         }
     }
 
