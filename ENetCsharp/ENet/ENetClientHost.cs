@@ -30,9 +30,10 @@ namespace ENetCsharp
             _protocolManager = new ProtocolManager();
             _peerState = PeerState.Uninitialized;
             _guid = Guid.NewGuid();
+            _frequency = new Frequency(clientOptions.Frequency);
         }
 
-        public void StartClient()
+        public void Connect()
         {
             try
             {

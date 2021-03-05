@@ -9,7 +9,7 @@ namespace ENetCsharp
         event Action<IProtocol> ProtocolReceived;
 
         AbstractClient GetClient();
-        void StartClient();
+        void Connect();
         void Destroy();
         void SendProtocol(IProtocol protocol, ENetCsharp.PacketFlags packetFlags = ENetCsharp.PacketFlags.None);
         void RegisterProtocolType(Type protocolType);
