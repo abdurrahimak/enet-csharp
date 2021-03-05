@@ -1,15 +1,15 @@
 ﻿namespace ENetCsharp
 {
-    public struct ServerOptions
+    public struct ClientOptions
     {
+        public string IP;
         public ushort Port;
-        public int MaxClient;
         public int UpdateRate;
 
-        public ServerOptions(ushort port, int maxClient=10, int updateRate=30)
+        public ClientOptions(string ip, ushort port, int updateRate = 30)
         {
+            IP = ip;
             Port = port;
-            MaxClient = maxClient;
             UpdateRate = updateRate;
         }
     }

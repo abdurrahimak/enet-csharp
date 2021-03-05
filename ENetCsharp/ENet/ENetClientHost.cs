@@ -17,6 +17,7 @@ namespace ENetCsharp
         private Event netEvent;
         private AbstractClient _peerClient;
         private Guid _guid;
+        private UpdateRate _updateRate;
 
         private const int _channelID = 0;
 
@@ -30,7 +31,7 @@ namespace ENetCsharp
             _protocolManager = new ProtocolManager();
             _peerState = PeerState.Uninitialized;
             _guid = Guid.NewGuid();
-            _frequency = new Frequency(clientOptions.Frequency);
+            _updateRate = new UpdateRate(clientOptions.UpdateRate);
         }
 
         public void Connect()
@@ -42,6 +43,7 @@ namespace ENetCsharp
                     throw new Exception("Already connected..");
                 }
 
+                _updateRate.Start();
                 ENetCsharp.Library.Initialize();
                 _client = new Host();
                 Address address = new Address();
@@ -61,6 +63,7 @@ namespace ENetCsharp
 
         public void Destroy()
         {
+            _updateRate.Stop();
             _client?.Dispose();
             _client = null;
             Library.Deinitialize();
@@ -186,6 +189,11 @@ namespace ENetCsharp
 
         public void Update()
         {
+            if (!_updateRate.CanRunAfterFrame())
+            {
+                return;
+            }
+
             Action action = MainThreadDispatcher.DequeueAction(_guid);
             action?.Invoke();
 

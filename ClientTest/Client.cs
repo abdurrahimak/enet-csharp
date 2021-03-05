@@ -13,16 +13,6 @@ namespace ClientTest
 
         static void Main(string[] args)
         {
-            ClientOptions clientOptions = new ClientOptions();
-            clientOptions.Port = 6005;
-            clientOptions.IP = "127.0.0.1";
-            _client = HostCreationFactory.CreateENetClientHost(clientOptions);
-            _client.Connected += Client_Connected;
-            _client.Disconnected += Client_Disconnected;
-            _client.ProtocolReceived += Client_ProcotolReceived;
-            _client.RegisterProtocolType(typeof(TestProtocol));
-
-
             Console.WriteLine("Client application started.");
             InputListener.Start();
 
@@ -65,7 +55,15 @@ namespace ClientTest
 
         private static void StartClient(string[] obj)
         {
-            _client.StartClient();
+            ushort port = ushort.Parse(obj[1]);
+            ClientOptions clientOptions = new ClientOptions("127.0.0.1", port);
+            _client = HostCreationFactory.CreateENetClientHost(clientOptions);
+            _client.Connected += Client_Connected;
+            _client.Disconnected += Client_Disconnected;
+            _client.ProtocolReceived += Client_ProcotolReceived;
+            _client.RegisterProtocolType(typeof(TestProtocol));
+
+            _client.Connect();
         }
 
         static void GameLoop()

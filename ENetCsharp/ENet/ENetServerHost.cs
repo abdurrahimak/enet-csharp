@@ -10,6 +10,7 @@ namespace ENetCsharp
         private ServerOptions _serverOptions;
         private bool _isSuccessfullyCreated;
         private Dictionary<uint, AbstractClient> _clientsById;
+        private UpdateRate _updateRate;
         Event netEvent;
 
         public event Action<AbstractClient> Connected;
@@ -22,12 +23,14 @@ namespace ENetCsharp
             _clientsById = new Dictionary<uint, AbstractClient>();
             _protocolManager = new ProtocolManager();
             _serverOptions = serverOptions;
+            _updateRate = new UpdateRate(serverOptions.UpdateRate);
         }
 
         public void StartServer()
         {
             try
             {
+                _updateRate.Start();
                 Library.Initialize();
                 _server = new Host();
                 Address address = new Address();
@@ -45,6 +48,7 @@ namespace ENetCsharp
 
         public void Destroy()
         {
+            _updateRate.Stop();
             _clientsById?.Clear();
             _protocolManager?.Destroy();
             _server?.Dispose();
@@ -165,6 +169,11 @@ namespace ENetCsharp
 
         public void Update()
         {
+            if (!_updateRate.CanRunAfterFrame())
+            {
+                return;
+            }
+
             if (!_isSuccessfullyCreated)
                 return;
             

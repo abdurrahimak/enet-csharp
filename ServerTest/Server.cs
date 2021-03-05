@@ -10,7 +10,7 @@ namespace ServerTest
     {
         static IHostServer _server;
         private static Stopwatch stopwatch = new Stopwatch();
-        static int sleepMilisecond = (int)(1000f / 30f);
+        static int sleepMilisecond = (int)(1000f / 45f);
         private static List<AbstractClient> _clients = new List<AbstractClient>();
 
         static void Main(string[] args)
@@ -22,7 +22,7 @@ namespace ServerTest
             InputListener.Register("dis", DestroyServer);
             InputListener.Register("disc", DisconnectClient);
             InputListener.Register("send", (commands) => { HandleProtocol.SendTest(_server, commands); });
-            StartServer(null);
+            StartServer("conn", "6005");
             while (!InputListener.Quited)
             {
                 stopwatch.Start();
@@ -63,11 +63,10 @@ namespace ServerTest
             _server.Destroy();
         }
 
-        private static void StartServer(string[] obj)
+        private static void StartServer(params string[] obj)
         {
-            ServerOptions serverOptions = new ServerOptions();
-            serverOptions.Port = 6005;
-            serverOptions.MaxClient = 10;
+            ushort port = ushort.Parse(obj[1]);
+            ServerOptions serverOptions = new ServerOptions(port, updateRate:10);
             _server = HostCreationFactory.CreateENetServerHost(serverOptions);
             _server.Connected += Client_Connected;
             _server.Disconnected += Client_Disconnected;
